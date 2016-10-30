@@ -1,37 +1,55 @@
+# -*- coding: utf-8 -*-
 import requests
 import json
 import random 
 import datetime
 
-#TELEGRAM_TOKEN = "INSERT YOUR TOKEN HERE"
-TELEGRAM_API = "https://api.telegram.org/"
+from getToken import getToken
+from getApi import getApi
 
 from requests.packages import urllib3
 urllib3.disable_warnings()
 
-class Bot(object):
 
 
-	"""docstring for Bot"""
-	def __init__(self, arg):
-		super(Bot, self).__init__()
-		self.arg = arg
-	def getUpdates(offset = None, timeout = 10):
+def getUpdates(offset = None, timeout = 10):
 
-		payload = {}
-		payload["timeout"] = timeout		
+	TELEGRAM_API = getApi()
+	TELEGRAM_TOKEN = getToken()
+
+	payload = {}
+	payload["timeout"] = timeout		
 
 	if offset:
 		payload['offset'] = offset
 	try:
-		response = requests.get(TELEGRAM_API)
-	except Exception as e:
-		raise
-	else:
+		response = requests.get(TELEGRAM_API + "bot" + TELEGRAM_TOKEN + "/getUpdates", params = payload)
+		print payload
+		print response.text
+		ret = json.loads(response.text)
+		print ret
+		if ['ok']:
+			return ret['result']
+
+	except requests.ConnectionError:
+		print "Connection error!!!"
 		pass
-	finally:
+	except ValueError:
+		print "Value error"
 		pass
 
 
 if __name__ == '__main__':
-	main()
+	last_id = 0
+	while True:
+		print "WAITING FOR UPDATES"	
+		print last_id
+		updates = getUpdates(last_id+1)
+			if updates:
+				last_id = updates[-1]['update_id']
+				for update in updates:
+					if '/hello' in update['message']['text']:
+						hello(update)
+					except KeyError:
+						pass
+				
