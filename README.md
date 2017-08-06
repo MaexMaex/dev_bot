@@ -1,2 +1,1 @@
-# Branch for a revrite of the hax bot dev_bot
-#
+# Python bot for telegram chat  

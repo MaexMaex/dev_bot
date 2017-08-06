@@ -1,2 +1,4 @@
 #ignore the telgram token
 token.txt
+#ignore ds_stor_store
+.DS_Store
