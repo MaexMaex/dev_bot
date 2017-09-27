@@ -1,4 +1,5 @@
 #ignore the telgram token
 token.txt
+*.pyc
 #ignore ds_stor_store
 .DS_Store
