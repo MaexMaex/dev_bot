@@ -2,125 +2,122 @@
 # -*- coding: utf-8 -*-
 
 import telegram
+from datetime import datetime
 import logging
-import sys
-from telegram.error import NetworkError, Unauthorized
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler
-from time import sleep
-import getToken
-import sqlite3
+from telegram.ext import Updater, InlineQueryHandler, CommandHandler
+from getToken import getToken
+from db_handler import DBHandler
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-#Database for the d2-bot
-#Handels all the stats and statuses of the users
-#Basic sqlite3 stuff
-conn = sqlite3.connect(':memory:')
-c = conn.cursor()
-c.execute("""CREATE TABLE minotaurs (
-            id integer,
-            stats integer,
-            status integer
-            )""")
+#
+version = "2.0"
+#
+startTime = datetime.now()
+db = DBHandler()
 
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 def checkUser(bot, update):
     user = update.message.from_user
-    if get_user(user.id) == None:
+    if db.get_user(user.id) == None:
         return False
     else:
         return True
 
-
 def start(bot, update):
     user = update.message.from_user
-    if get_user(user.id) == None:
-        update.message.reply_text("Hi " + user.username + ", you've started using d2-bot, your added to the system. You can now start drinking!")
-        add_user(user.id)
+    if db.get_user(user.id) == None:
+        update.message.reply_text("Hi " + user.username + ", you've started using d2-bot, you're added to the system. You can now start drinking!")
+        db.add_user(user.id, user.username)
     else:
-        update.message.reply_text("Howdy, " + user.username + ", Im d2-bot running stable version 2.0. Lovely weather today.")
+        update.message.reply_text("Howdy, " + user.username + ", you are already registered! For more info typ /help .")
 
-def bttn(bot, update):
-    if checkUser:
-        user = update.message.from_user
-        update.message.reply_text("Huuah")
+#the stats method returns the statistics of all registered users
+def stats(bot, update):
+    if checkUser(bot, update):
+        stats = db.get_all_statistics()
+        update.message.reply_text("These are the statistics for all users!\n")
+        for line in stats:
+            #update.message.reply_text(user)
+            update.message.reply_text(line[0] + " : " + str(line[1]))
     else:
         update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
+#the status method returns the status of every registered user   
+def status(bot, update):
+    if checkUser(bot, update):
 
-#adds a user to the database
-def add_user(id):
-    with conn:
-        c.execute("INSERT INTO minotaurs VALUES (:id, :stats, :status)", {'id': id, 'stats': 0, 'status': 0})
-
-def get_user(id):
-    with conn:
-        c.execute("SELECT id, stats, status FROM minotaurs WHERE id = :id", {'id': id})
-        return c.fetchone()
-#adds a bttn for a user with id      
-def add_bttn(id):
-    with conn:
-        c.execute("""UPDATE minotaurs SET stats = stats + 1
-                WHERE id = :id""",
-                {'id': id})
-        change_status(id)
-        
-#changes the status of a user with id
-def change_status(id):
-    with conn:
-        status = get_min_status(id)
-        if status[0] == 1:
-            c.execute("""UPDATE minotaurs SET status = :status
-                    WHERE id = :id""",
-                    {'id': id, 'status': 0})
+        status = db.get_all_status()
+        update.message.reply_text("The following minotaurs are drinking!\n")
+        for user in status:
+            update.message.reply_text(user)
+    else:
+        update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
+#the bttn method triggers a button switch, updates a users status and increases the users stats
+def bttn(bot, update):
+    if checkUser(bot, update):
+        user = update.message.from_user 
+        #check users status
+        status = db.get_min_status(user.id) 
+        if status[0] == 0:
+            db.change_status(user.id, 1)
+            #add one to the users stats
+            db.add_bttn(user.id)
+            update.message.reply_text(user.username + " is drinking!")
         else:
-            c.execute("""UPDATE minotaurs SET status = :status
-                    WHERE id = :id""",
-                    {'id': id, 'status': 1})
+            db.change_status(user.id, 0)
+            update.message.reply_text(user.username + " stopped drinking!")
+        
+    else:
+        update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
+#the getMe method returns the users stats and statistics
+def getMe(bot, update):
+    if checkUser(bot, update):
+        user = update.message.from_user 
+        status = db.get_min_status(user.id)
+        if status[0] == 0:
+            status = "off"
+        else:
+            status = "on"
+        stats = db.get_min_statistics(user.id)
+        update.message.reply_text(user.username + " \nstats: " + str(stats[0]) + "\nstatus: " + status)
+    else:
+        update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
+#the undo method lets the user undo a bttn
+def undo(bot, update):
+    if checkUser(bot, update):
+        user = update.message.from_user 
+        db.remove_bttn(user.id)
+        db.change_status(user.id)
+        update.message.reply_text("I removed your last bttn and reset your status!")
+        getMe(bot, update)
+    else:
+        update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
+#the help method displays what this bot is does and give some stats about it
+def help(bot, update):
+    time = datetime.now() - startTime
+    update.message.reply_text("Hi, im d2-bot. Running at stable version " + version + ". \n\nI've been running for " + str(time) + "\n\nRegister yourself with /start \nand then start drinking with /bttn, \nif you make a mistake you can /undo to remove your last bttn. \nHave fun, and remember, you miss 100% of the shots you don't take!")
 
-#get user status with id
-def get_min_status(id):
-    c.execute("SELECT status FROM minotaurs WHERE id = :id", {'id': id})
-    return c.fetchone()
-#returns the statistics of the user with id
-def get_min_statistics(id):
-    c.execute("SELECT stats FROM minotaurs WHERE id = :id", {'id': id})
-    return c.fetchone()
-#returns a snapshot status of all the users
-def get_all_status():
-    c.execute("SELECT id, status FROM minotaurs")
-    return c.fetchall()
-def get_all_statistics():
-    c.execute("SELECT id, stats FROM minotaurs")
-    return c.fetchall()
 
-#removes a bttn for a user, ONLY used to correct statistics if the user mistakenly double taps
-def remove_bttn(id):
-    c.execute("""UPDATE minotaurs SET stats = stats - 1
-            WHERE id = :id""",
-            {'id': id})
-#removes a user from the database
-def remove_user(id):
-    c.execute("DELETE from minotaurs WHERE id = :id", {'id': id})
-    pass
 def main():
     
-    updater = Updater(token=getToken.getToken())
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    db.setup()
+    updater = Updater(token=getToken())
     
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("bttn", bttn))
     dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("stats", stats))
+    dispatcher.add_handler(CommandHandler("status", status))
+    dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("undo", undo))
+    dispatcher.add_handler(CommandHandler("getMe", getMe))
 
     dispatcher.add_error_handler(error)
-
     updater.start_polling()
-
     updater.idle()
-    
 
 if __name__ == '__main__':
     main()
-    conn.close()

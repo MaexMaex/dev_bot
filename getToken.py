@@ -7,6 +7,7 @@ def getToken():
         sys.exit()
     TELEGRAM_TOKEN = f.read()
     f.close()
+    
     return TELEGRAM_TOKEN
 
 if __name__ == '__main__':
