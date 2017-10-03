@@ -114,10 +114,6 @@ def main():
     logger = logging.getLogger(__name__)
     db.setup()
     updater = Updater(token=getToken())
-    db.add_user(12, "Holgerilainen")
-    db.add_bttn(12)
-    db.add_bttn(12)
-    db.add_bttn(12)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("bttn", bttn))
