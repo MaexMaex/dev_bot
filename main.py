@@ -55,7 +55,10 @@ def status(bot, update):
         status = db.get_all_status()
         users = "The following minotaurs are drinking!\n"
         for line in status:
-            users += line[0] + " : " + str(line[1]) + "\n"
+            if line[1] == 1:
+                users += line[0] + " : " + str(line[1]) + "\n"
+            else:
+                pass
         update.message.reply_text(users)
     else:
         update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
