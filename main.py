@@ -13,6 +13,8 @@ startTime = datetime.now()
 db = DBHandler()
 
 def error(bot, update, error):
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 #checkUser checks is the user is already registered for d2-bot
@@ -139,9 +141,6 @@ def button(bot, update):
 
 
 def main():
-    
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-    logger = logging.getLogger(__name__)
     db.setup()
     updater = Updater(token=getToken())
     dispatcher = updater.dispatcher
