@@ -2,53 +2,65 @@ from db_handler import DBHandler
 db = DBHandler()
 
 def main():
-    stop = False
-    while stop is not True:
-        ui()
-        userInput = input('> ')
-
-        if userInput == 1:
+    stop = False    
+    ui()
+    while stop is not True:        
+        userInput = raw_input('> ')
+        if userInput == "1":
+            users_get_all()
             
+
+        if userInput == "2":
+            users_get_all()
             foundUser = False
             while foundUser is not True:
-                username = raw_input('What user do you want to edit: ')
+                username = raw_input('WHICH USER DO YOU WANT TO EDIT: ')
                 foundUser = user_check(username)
 
             id = user_get_id(username)        
             stats_curr = user_stats(id)
-            print "with id " + str(id) + " and stats : " + str(stats_curr)
+            print "WITH ID " + str(id) + " AND STATS : " + str(stats_curr)
             approved = False
             while approved is not True:
-                stats = raw_input('With how much do you want to change (+/-): ')       
+                stats = raw_input('CHANGE STATS WITH (+/-): ')       
                 stats = int(stats) + stats_curr
-                print username + " stats will change from " + str(stats_curr) + " to " + str(stats)
-                cont = raw_input('Ok to continue? (yes/no): ')              
-                if cont == "yes":
+                print username + "'s STATS WILL CHANGE FROM " + str(stats_curr) + " TO " + str(stats)
+                cont = raw_input('OK TO CONTINUE? (Y/N): ')              
+                if cont == "Y":
                     stats_change(id, stats)
                     approved = True
+            
 
-        if userInput == 2:
+        if userInput == "3":
             users_get_all()
             foundUser = False
             while foundUser is not True:
-                username = raw_input('Which user do you want to remove: ')
+                username = raw_input('WHICH USER DO YOU WANT TO REMOVE: ')
                 foundUser = user_check(username)
             
             id = user_get_id(username)  
-            print "with id " + str(id)
+            print "WITH ID " + str(id)
             approved = False
             while approved is not True:
-                print "Will remove user " + username
-                cont = raw_input('Ok to continue? (yes/no): ')
-                user_remove(id)
-                approved = True
+                print "ARE YOU SURE YOU WANT TO REMOVE " + username
+                cont = raw_input('CONTINUE? (Y/N): ')
+                if cont == "Y":
+                    user_remove(id)
+                    approved = True
+            )
 
-        if userInput == 4:
-            print "Closing admin panel"
+        if userInput == "4":
+            print "CLOSING TERMINAL"
             stop = True
         
+        if userInput == "UI":
+            ui()
+
         else:
             pass
+
+def spacing():
+    print "\n\n\n"
 
 def user_stats(id):
     stats = db.get_min_statistics(id)
@@ -56,23 +68,22 @@ def user_stats(id):
 
 def user_remove(id):    
     db.remove_user(id)
-    print "DB wiped user with id " + str(id)
+    print "REMOVED USER WITH ID " + str(id)
 
 def user_check(username):    
     if db.get_min_id(username) == None:
-        print "No user named " + username
+        print "NO USER NAMED " + username
         return False
     else:
-        print "Found user " + username
+        print "FOUND USER " + username
         return True
 
 def stats_change(id, stat):
     if db.set_stats_for_min(id, stat) == None:
-        print "Changed users stats"
         s = db.get_min_statistics(id)
-        print "Now set to " + str(s[0])
+        print "STATS SET TO " + str(s[0])
     else:
-        print "Something is wrong"
+        print "SOMETHING WENT WRONG, PLEASE VERIFY"
 
 def user_get_id(username):
     id = db.get_min_id(username)    
@@ -80,19 +91,21 @@ def user_get_id(username):
 
 def users_get_all():
     everyone = db.get_all_statistics()
+    
     for user in everyone:
         print user
 
 def ui():
     print "***********************"
-    print "***d2bot admin panel***"
+    print "*D2-BOT ADMIN TERMINAL*"
     print "***********************"
-    print "What do you want to do?"
+    print "***WELCOME COMMANDER***"
     print "***********************"
-    print "1: set stats for user"
-    print "2: remove user"
-    print "3: -"
+    print "1: PRINT ALL USERS"
+    print "2: UPDATE STATS FOR A USER"
+    print "3: REMOVE A USER"
     print "4: QUIT"
+    print "UI: PRINT THE MENU"
 
 if __name__ == '__main__':
     main()
