@@ -67,7 +67,7 @@ def user_check(username):
         return True
 
 def stats_change(id, stat):
-    if db.set_stats_for_min(id, stat):
+    if db.set_stats_for_min(id, stat) == None:
         print "Changed users stats"
         s = db.get_min_statistics(id)
         print "Now set to " + str(s[0])
