@@ -8,9 +8,9 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from getToken import getToken
 from db_handler import DBHandler
-import getChatId
+from getChatId import getId
 
-CHAT_ID = getChatId()
+CHAT_ID = getId()
 startTime = datetime.now()
 db = DBHandler()
 
