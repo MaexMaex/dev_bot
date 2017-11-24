@@ -9,3 +9,5 @@ minotaurs.sqlite
 build/
 #.vscode
 .vscode
+#chatid
+chatid.txt

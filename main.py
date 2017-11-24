@@ -8,7 +8,9 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from getToken import getToken
 from db_handler import DBHandler
+import getChatId
 
+CHAT_ID = getChatId()
 startTime = datetime.now()
 db = DBHandler()
 
@@ -23,12 +25,15 @@ def error(bot, update, error):
 
 def checkUser(bot, update):
     user = update.message.from_user
-    chat_id = update.message.chat.id
-    print chat_id
-    if db.get_user(user.id) == None:
-        return False
+    req_chat_id = update.message.chat.id
+
+    if CHAT_ID != req_chat_id:
+        update.message.reply_text("You aren't allowed to use this bo, go away!!!")
     else:
-        return True
+        if db.get_user(user.id) == None:
+            return False
+        else:
+            return True
 
 #start registers the user for usage
 def start(bot, update):
@@ -100,6 +105,7 @@ def getMe(bot, update):
 #the undo method lets the user undo a bttn
 def undo(bot, update):
     if checkUser(bot, update):
+        update.message.reply_text(user.username)
         user = update.message.from_user 
         db.remove_bttn(user.id)
         db.change_status(user.id)
