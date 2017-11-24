@@ -47,7 +47,6 @@ def main():
                 if cont == "Y":
                     user_remove(id)
                     approved = True
-            )
 
         if userInput == "4":
             print "CLOSING TERMINAL"

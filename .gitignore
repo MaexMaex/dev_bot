@@ -5,3 +5,7 @@ token.txt
 .DS_Store
 #sqliteDB
 minotaurs.sqlite
+#build folder
+build/
+#.vscode
+.vscode

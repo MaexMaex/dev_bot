@@ -13,13 +13,18 @@ startTime = datetime.now()
 db = DBHandler()
 
 def error(bot, update, error):
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-    logger = logging.getLogger(__name__)
+    #change the logging level between INFO - normal mode or DEBUG - verbose mode
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+    logger = logging.getLogger(__name__)    
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
-#checkUser checks is the user is already registered for d2-bot
+#checkUser checks is the user is already registered for d2-bot, 
+#verify that only users from a certain chat have access
+
 def checkUser(bot, update):
     user = update.message.from_user
+    chat_id = update.message.chat.id
+    print chat_id
     if db.get_user(user.id) == None:
         return False
     else:
@@ -98,7 +103,7 @@ def undo(bot, update):
         user = update.message.from_user 
         db.remove_bttn(user.id)
         db.change_status(user.id)
-        update.message.reply_text("I removed your last bttn and reset your status!")
+        update.message.reply_text(user.username + " I removed your last bttn and reset your status!")
         getMe(bot, update)
     else:
         update.message.reply_text("You haven't signed up to d2-bot, please do so by pressing /start !")
