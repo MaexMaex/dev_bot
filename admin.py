@@ -32,7 +32,8 @@ def main():
                 stats = raw_input('CHANGE STATS WITH (+/-): ')       
                 stats = int(stats) + stats_curr
                 print username + "'s STATS WILL CHANGE FROM " + str(stats_curr) + " TO " + str(stats)
-                cont = raw_input('OK TO CONTINUE? (Y/N): ')              
+                cont = raw_input('OK TO CONTINUE? (Y/N): ')     
+                cont = cont.upper()         
                 if cont == "Y":
                     stats_change(id, stats)
                     approved = True
@@ -51,6 +52,7 @@ def main():
             while approved is not True:
                 print "ARE YOU SURE YOU WANT TO REMOVE " + username
                 cont = raw_input('CONTINUE? (Y/N): ')
+                cont = cont.upper()
                 if cont == "Y":
                     user_remove(id)
                     approved = True
@@ -61,22 +63,16 @@ def main():
             while approved is not True:
                 print "RESET ALL USERS AND DUMP STATS?"
                 cont = raw_input('CONTINUE? (Y/N): ')
+                cont = cont.upper()
                 if cont == "Y":
                     fileName = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S.txt')
                     everyone = users_get_all()
-                    for user in everyone:
-                        print user
+                    nollaus(everyone)
                     output(fileName, everyone)
                     approved = True
-                    for user in everyone:
-                        id = user_get_id(user[0])
-                        stats_change(id, 0)
-                    print "STATS RESET & SAVED! to " + fileName
                 else: 
                     approved = True
-                    print "EXIT"
-
-
+                    
         #QUIT
         if userInput == "Q":
             print "CLOSING TERMINAL"
@@ -88,13 +84,21 @@ def main():
         else:
             pass
 
+def nollaus(userList):
+    for user in userList:
+        print user
+        id = user_get_id(user[0])
+        stats_change(id, 0)
+        db.change_status(id, 0)
+        print "ALL USER STATS AND STATUSES ZEROED"
+    
 def output(fileName, data):
     try:
         print "Writing..."
         fileName = str(fileName)
         with open(fileName, 'w') as fname:
             fname.write('\n'.join('%s %s' % x for x in data))
-
+        print "STATS RESET & SAVED! to " + fileName
     except IOError: 
         print "Could not open file: ", fname
 
