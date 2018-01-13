@@ -28,7 +28,7 @@ def checkUser(bot, update):
     req_chat_id = update.message.chat.id
     print req_chat_id
     print CHAT_ID
-    if CHAT_ID == req_chat_id:
+    if CHAT_ID != req_chat_id:
         update.message.reply_text("You aren't allowed to use this bot, go away!!!")
     else:
         if db.get_user(user.id) == None:

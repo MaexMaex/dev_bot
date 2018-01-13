@@ -11,3 +11,5 @@ build/
 .vscode
 #chatid
 chatid.txt
+#all .txt files
+*.txt

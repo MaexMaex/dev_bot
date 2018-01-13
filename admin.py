@@ -1,4 +1,7 @@
 from db_handler import DBHandler
+import datetime
+import time
+
 db = DBHandler()
 
 def main():
@@ -6,10 +9,14 @@ def main():
     ui()
     while stop is not True:        
         userInput = raw_input('> ')
+        userInput = userInput.upper()
+        #PRINT STATS
         if userInput == "1":
-            users_get_all()
-            
+            everyone = users_get_all()
+            for user in everyone:
+                print user
 
+        #CHANGE STATS
         if userInput == "2":
             users_get_all()
             foundUser = False
@@ -25,12 +32,13 @@ def main():
                 stats = raw_input('CHANGE STATS WITH (+/-): ')       
                 stats = int(stats) + stats_curr
                 print username + "'s STATS WILL CHANGE FROM " + str(stats_curr) + " TO " + str(stats)
-                cont = raw_input('OK TO CONTINUE? (Y/N): ')              
+                cont = raw_input('OK TO CONTINUE? (Y/N): ')     
+                cont = cont.upper()         
                 if cont == "Y":
                     stats_change(id, stats)
                     approved = True
             
-
+        #REMOVE A USER
         if userInput == "3":
             users_get_all()
             foundUser = False
@@ -44,19 +52,55 @@ def main():
             while approved is not True:
                 print "ARE YOU SURE YOU WANT TO REMOVE " + username
                 cont = raw_input('CONTINUE? (Y/N): ')
+                cont = cont.upper()
                 if cont == "Y":
                     user_remove(id)
                     approved = True
 
+        #SAVE & CLEAR
         if userInput == "4":
+            approved = False
+            while approved is not True:
+                print "RESET ALL USERS AND DUMP STATS?"
+                cont = raw_input('CONTINUE? (Y/N): ')
+                cont = cont.upper()
+                if cont == "Y":
+                    fileName = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S.txt')
+                    everyone = users_get_all()
+                    nollaus(everyone)
+                    output(fileName, everyone)
+                    approved = True
+                else: 
+                    approved = True
+                    
+        #QUIT
+        if userInput == "Q":
             print "CLOSING TERMINAL"
             stop = True
-        
+        #PRINT UI
         if userInput == "UI":
             ui()
 
         else:
             pass
+
+def nollaus(userList):
+    for user in userList:
+        print user
+        id = user_get_id(user[0])
+        stats_change(id, 0)
+        db.change_status(id, 0)
+        print "ALL USER STATS AND STATUSES ZEROED"
+    
+def output(fileName, data):
+    try:
+        print "Writing..."
+        fileName = str(fileName)
+        with open(fileName, 'w') as fname:
+            fname.write('\n'.join('%s %s' % x for x in data))
+        print "STATS RESET & SAVED! to " + fileName
+    except IOError: 
+        print "Could not open file: ", fname
 
 def spacing():
     print "\n\n\n"
@@ -90,9 +134,8 @@ def user_get_id(username):
 
 def users_get_all():
     everyone = db.get_all_statistics()
+    return everyone
     
-    for user in everyone:
-        print user
 
 def ui():
     print "***********************"
@@ -103,7 +146,8 @@ def ui():
     print "1: PRINT ALL USERS"
     print "2: UPDATE STATS FOR A USER"
     print "3: REMOVE A USER"
-    print "4: QUIT"
+    print "4: LOG ALL STATS AND RESET"
+    print "Q: QUIT"
     print "UI: PRINT THE MENU"
 
 if __name__ == '__main__':
