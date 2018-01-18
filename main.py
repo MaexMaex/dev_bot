@@ -107,10 +107,10 @@ def getMe(bot, update):
 #the undo method lets the user undo a bttn
 def undo(bot, update):
     if checkUser(bot, update):
-        update.message.reply_text(user.username)
         user = update.message.from_user 
+        user_status = db.get_min_status(user.id)
         db.remove_bttn(user.id)
-        db.change_status(user.id)
+        db.change_status(user.id, user_status)
         update.message.reply_text(user.username + " I removed your last bttn and reset your status!")
         getMe(bot, update)
     else:
